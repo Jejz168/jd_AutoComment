@@ -20,7 +20,7 @@ jobs:
       
       - name: Setting
         run: |
-         if [ '${{ secrets.cookie }}' != '' ]; then sed -i "s/^cookie=.*$/TO='${{ secrets.cookie }}'/" config.yml; fi
+         if [ '${{ secrets.cookie }}' != '' ]; then sed -i "s/^cookie=.*$/cookie='${{ secrets.cookie }}'/" config.yml; fi
        
       - name: Auto
         run: |
