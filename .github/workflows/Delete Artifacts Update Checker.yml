@@ -1,0 +1,44 @@
+name: Delete Artifacts Update Checker
+
+on:
+  #release:
+  #  types: published
+ # schedule:
+  #  - cron: 20 0/1 * * * 
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  New-Update-Files:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+    
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo timedatectl set-timezone "$TZ"
+        pwd
+        svn export https://github.com/Dimlitter/jd_AutoComment/trunk/ ./ --force
+        
+    - name: Commit
+      run: |
+        git config --global user.email 349589369@qq.com
+        git config --global user.name Jejz-jd_AutoComment
+        git add .
+        git commit -m"action:`date`"
+        git pull --rebase
+        
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GH_TOKEN }}        
+                
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+        retain_days: 0
+        keep_minimum_runs: 3
