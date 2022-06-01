@@ -22,7 +22,7 @@ jieba.setLogLevel(jieba.logging.INFO)
 
 with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
     cfg = yaml.safe_load(f)
-ck = cfg['cookie']
+ck = cfg['user']['cookie']
 
 headers = {
     'cookie': ck,
