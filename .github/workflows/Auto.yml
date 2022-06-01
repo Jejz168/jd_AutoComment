@@ -20,7 +20,7 @@ jobs:
       
       - name: Setting
         run: |
-         if [ '${{ secrets.cookie }}' != '' ]; then sed -i "s/^cookie: '*${{ secrets.cookie }}'/" ./config.yml; fi
+          sed -i 'cookie: "${{ secrets.COOKIE }}"' ./config.yml
        
       - name: Auto
         run: |
