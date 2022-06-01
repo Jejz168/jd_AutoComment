@@ -1,0 +1,27 @@
+name: Auto22
+
+on:
+  #schedule:
+   # - cron: '30 */8 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'setup python'
+        uses: actions/setup-python@master
+        with: 
+          python-version: 3.7
+
+      - name: requirements
+        run : pip3 install -r requirements.txt
+
+      - name: Auto22
+        run: |
+          sed -i "s|''|'${{ secrets.COOKIE }}'|g" ./config.yml
+          
+      - name: Auto
+        run: |
+          python3 auto_comment_plus.py
