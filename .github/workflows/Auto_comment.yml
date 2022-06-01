@@ -1,4 +1,4 @@
-name: Auto22
+name: Auto_comment
 
 on:
   #schedule:
@@ -18,7 +18,7 @@ jobs:
       - name: requirements
         run : pip3 install -r requirements.txt
 
-      - name: Auto22
+      - name: Setting
         run: |
           sed -i "s/''/'${{ secrets.COOKIE }}'/" ./config.yml
           
