@@ -1,0 +1,27 @@
+name: Auto_comment1
+
+on:
+  #schedule:
+   # - cron: '30 */8 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'setup python'
+        uses: shivammathur/setup-php@v2
+        with: 
+          python-version: 7.3
+
+      - name: requirements
+        run : pip3 install -r requirements.txt
+
+      - name: Setting
+        run: |
+          sed -i "s/''/'${{ secrets.COOKIE1 }}'/" ./config.yml
+          
+      - name: Auto
+        run: |
+          python3 auto_comment_plus.py
