@@ -16,6 +16,7 @@ from lxml import etree
 
 
 # Reference: https://github.com/fxsjy/jieba/blob/1e20c89b66f56c9301b0feed211733ffaa1bd72a/jieba/__init__.py#L27
+cookie = ""
 log_console = logging.StreamHandler(sys.stderr)
 default_logger = logging.getLogger('jdspider')
 default_logger.setLevel(logging.DEBUG)
@@ -68,7 +69,8 @@ class JDSpider:
 
     def getHeaders(self, productid):  # 和初始的self.header不同，这是爬取某个商品的header，加入了商品id，我也不知道去掉了会怎样。
         header = {"Referer": "https://item.jd.com/%s.html" % (productid),
-                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+                  "cookie" : cookie
                   }
         return header
 
@@ -85,16 +87,17 @@ class JDSpider:
 
         comments = []
         scores = []
-        if len(self.productsId) < 10:  # limit the sum of products
+        default_logger.info('爬取商品数量最多为8个,请耐心等待,也可以自行修改jdspider文件')
+        if len(self.productsId) < 8:  # limit the sum of products
             sum = len(self.productsId)
         else:
-            sum = 10
+            sum = 8
         for j in range(sum):
             id = self.productsId[j]
             header = self.getHeaders(id)
             for i in range(1, maxPage):
                 param, url = self.getParamUrl(id, i, score)
-                default_logger.info("正在爬取评论信息>>>>>>>>>第：%d 个，第 %d 页" % (j, i))
+                default_logger.info(f"正在爬取当前商品的评论信息>>>>>>>>>第：%d 个，第 %d 页" % (j, i))
                 try:
                     response = requests.get(url, headers=header, params=param)
                 except Exception as e:
@@ -113,10 +116,8 @@ class JDSpider:
                     default_logger.warning(e)
                     continue
                 if len((res_json['comments'])) == 0:
-                    default_logger.warning("页面次数已到：%d,超出范围" % (i))
+                    default_logger.warning("页面次数已到：%d,超出范围(或未爬取到评论)" % (i))
                     break
-                default_logger.info("正在爬取%s %s 第 %d" %
-                                    (self.categlory, self.comtype[score], i))
                 for cdit in res_json['comments']:
                     comment = cdit['content'].replace(
                         "\n", ' ').replace('\r', ' ')
