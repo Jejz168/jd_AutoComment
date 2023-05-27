@@ -9,14 +9,15 @@ import logging
 import os
 import random
 import sys
-import time
+import time,re
+import urllib.parse
 
 import jieba  # just for linting
 import jieba.analyse
 import requests
 import yaml
 from lxml import etree
-
+import zhon.hanzi
 import jdspider
 
 
