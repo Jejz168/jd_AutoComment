@@ -653,69 +653,43 @@ if __name__ == '__main__':
     logger.debug('  SERVICE_RATING_SLEEP_SEC: %s', SERVICE_RATING_SLEEP_SEC)
 
     # parse configurations
-    #logger.debug('Reading the configuration file')
-    #if os.path.exists(USER_CONFIG_PATH):
-        #logger.debug('User configuration file exists')
-        #_cfg_path = USER_CONFIG_PATH
-    #else:
-        #logger.debug('User configuration file doesn\'t exist, fallback to the default one')
-        #_cfg_path = CONFIG_PATH
-   # with open(_cfg_path, 'r', encoding='utf-8') as f:
-        #cfg = yaml.safe_load(f)
-        #print()
-    #logger.debug('Closed the configuration file')
-    #logger.debug('Configurations in Python-dict format: %s', cfg)
-    cks = []
-    if "PC_COOKIE" in os.environ:
-        if len(os.environ["PC_COOKIE"]) > 200:
-            if '&' in os.environ["PC_COOKIE"]:
-                cks = os.environ["PC_COOKIE"].split('&')
-            else:
-                cks.append(os.environ["PC_COOKIE"])
-        else:
-            logger.info ("CK错误，请确认是否电脑版CK！")
-            sys.exit(1)
-        logger.info ("已获取环境变量 CK")       
+    logger.debug('Reading the configuration file')
+    if os.path.exists(USER_CONFIG_PATH):
+        logger.debug('User configuration file exists')
+        _cfg_path = USER_CONFIG_PATH
     else:
-        logger.info("没有设置变量PC_COOKIE，请添加电脑端CK到环境变量")
-        sys.exit(1)
-    if "OPENAI_API_KEY" in os.environ:
-        logger.info('已启用AI评价')
-        if "OPENAI_API_BASE_URL" in os.environ:
-            logger.info('  - 使用 OpenAI API 代理：' + os.environ["OPENAI_API_BASE_URL"])
-        elif os.environ.get("ProxyUrl").startswith("http"):
-            os.environ['http_proxy'] = os.getenv("ProxyUrl")
-            os.environ['https_proxy'] = os.getenv("ProxyUrl")
-            logger.info('  - 使用QL配置文件ProxyUrl代理：' + os.environ["ProxyUrl"])
-        else:
-            logger.info('  - 未使用代理，请确认当前网络环境可直连：api.openai.com')
+        logger.debug('User configuration file doesn\'t exist, fallback to the default one')
+        _cfg_path = CONFIG_PATH
+    with open(_cfg_path, 'r', encoding='utf-8') as f:
+        cfg = yaml.safe_load(f)
+    logger.debug('Closed the configuration file')
+    logger.debug('Configurations in Python-dict format: %s', cfg)
+    ck = cfg['user']['cookie']
+       
+    headers = {
+        'cookie': ck.encode("utf-8"),
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Google Chrome";v="98"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'DNT': '1',
+        'Upgrade-Insecure-Requests': '1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Sec-Fetch-Site': 'same-site',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-User': '?1',
+        'Sec-Fetch-Dest': 'document',
+        'Referer': 'https://order.jd.com/',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+    }
+    logger.debug('Builtin HTTP request header: %s', headers)
+
+    logger.debug('Starting main processes')
     try:
-        i = 1
-        for ck in cks:        
-            headers = {
-                'cookie': ck.encode("utf-8"),
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36',
-                'Connection': 'keep-alive',
-                'Cache-Control': 'max-age=0',
-                'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Google Chrome";v="98"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'DNT': '1',
-                'Upgrade-Insecure-Requests': '1',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                'Sec-Fetch-Site': 'same-site',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-User': '?1',
-                'Sec-Fetch-Dest': 'document',
-                'Referer': 'https://order.jd.com/',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'zh-CN,zh;q=0.9',
-            }
-            logger.debug('Builtin HTTP request header: %s', headers)
-            logger.debug('Starting main processes')
-            logger.info('\n开始第 '+ str(i) +' 个账号评价...\n')
-            main(opts)
-            i += 1
+        main(opts)
     # NOTE: It needs 3,000 times to raise this exception. Do you really want to
     # do like this?
     except RecursionError:
