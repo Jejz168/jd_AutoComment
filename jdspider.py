@@ -1,5 +1,5 @@
-# @Time : 2022/2/8 20:50
-# @Author :@Zhang Jiale and @Dimlitter
+# @Time : 2022/10/2
+# @Author :@Zhang Jiale @Dimlitter @6dylan6
 # @File : jdspider.py
 
 import json
@@ -23,8 +23,8 @@ default_logger.addHandler(log_console)
 
 
 class JDSpider:
-    # 爬虫实现类：传入商品类别（如手机、电脑），构造实例。然后调用getData爬取数据。
-    def __init__(self, categlory):
+    # 爬虫实现类：传入商品类别（如手机、电脑），构造实例。然后调用getData搜集数据。
+    def __init__(self, categlory, ck):
         # jD起始搜索页面
         self.startUrl = "https://search.jd.com/Search?keyword=%s&enc=utf-8" % (
             quote(categlory))
@@ -42,11 +42,12 @@ class JDSpider:
             'sec-fetch-site': 'none',
             'sec-fetch-user': '?1',
             'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36'
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'
         }
         self.productsId = self.getId()
-        self.comtype = {1: "nagetive", 2: "medium", 3: "positive"}
+        self.comtype = {1: "差评", 2: "中评", 3: "好评"}
         self.categlory = categlory
+        self.ck = ck
         self.iplist = {
             'http': [],
             'https': []
@@ -66,46 +67,47 @@ class JDSpider:
         url = self.commentBaseUrl + urlencode(params)
         return params, url
 
-    def getHeaders(self, productid):  # 和初始的self.header不同，这是爬取某个商品的header，加入了商品id，我也不知道去掉了会怎样。
-        header = {"Referer": "https://item.jd.com/%s.html" % (productid),
-                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
-                  }
+    def getHeaders(self, productid):  # 和初始的self.header不同，这是搜集某个商品的header，加入了商品id，我也不知道去掉了会怎样。
+        header = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+        "Cookie": self.ck.encode("utf-8")
+        }
         return header
 
     def getId(self):  # 获取商品id，为了得到具体商品页面的网址。结果保存在self.productId的数组里
         response = requests.get(self.startUrl, headers=self.headers)
         if response.status_code != 200:
-            default_logger.warning("状态码错误，爬虫连接异常！")
+            default_logger.warning("状态码错误，连接异常！")
         html = etree.HTML(response.text)
         return html.xpath('//li[@class="gl-item"]/@data-sku')
 
-    def getData(self, maxPage, score,):  # maxPage是爬取评论的最大页数，每页10条数据。差评和好评的最大一般页码不相同，一般情况下：好评>>差评>中评
+    def getData(self, maxPage, score,):  # maxPage是搜集评论的最大页数，每页10条数据。差评和好评的最大一般页码不相同，一般情况下：好评>>差评>中评
         # maxPage遇到超出的页码会自动跳出，所以设大点也没有关系。
         # score是指那种评价类型，好评3、中评2、差评1。
 
         comments = []
         scores = []
-        if len(self.productsId) < 10:  # limit the sum of products
+        if len(self.productsId) < 4:  # limit the sum of products
             sum = len(self.productsId)
         else:
-            sum = 10
+            sum = 3
         for j in range(sum):
             id = self.productsId[j]
             header = self.getHeaders(id)
             for i in range(1, maxPage):
                 param, url = self.getParamUrl(id, i, score)
-                default_logger.info("正在爬取评论信息>>>>>>>>>第：%d 个，第 %d 页" % (j, i))
+                default_logger.info("正在搜集第%d个商品第%d页的评论信息" % (j+1, i))
                 try:
                     response = requests.get(url, headers=header, params=param)
                 except Exception as e:
                     default_logger.warning(e)
                     break
                 if response.status_code != 200:
-                    default_logger.warning("状态码错误，爬虫连接异常")
+                    default_logger.warning("状态码错误，连接异常")
                     continue
                 time.sleep(random.randint(5, 10))  # 设置时延，防止被封IP
                 if response.text == '':
-                    default_logger.warning("未爬取到信息")
+                    default_logger.warning("未搜集到信息")
                     continue
                 try:
                     res_json = json.loads(response.text)
@@ -113,24 +115,26 @@ class JDSpider:
                     default_logger.warning(e)
                     continue
                 if len((res_json['comments'])) == 0:
-                    default_logger.warning("页面次数已到：%d,超出范围" % (i))
+                    default_logger.warning("本页无评价数据，跳过")
                     break
-                default_logger.info("正在爬取%s %s 第 %d" %
-                                    (self.categlory, self.comtype[score], i))
+                default_logger.info("正在搜集 %s 的%s信息" %
+                                    (self.categlory, self.comtype[score]))
                 for cdit in res_json['comments']:
                     comment = cdit['content'].replace(
                         "\n", ' ').replace('\r', ' ')
                     comments.append(comment)
                     scores.append(cdit['score'])
         # savepath = './'+self.categlory+'_'+self.comtype[score]+'.csv'
-        default_logger.warning("已爬取%d 条 %s 评价信息" %
+        default_logger.warning("已搜集%d条%s信息" %
                                (len(comments), self.comtype[score]))
         # 存入列表,简单处理评价
         remarks = []
         for i in range(len(comments)):
+            rst = comments[i]
             rst = re.findall(zhon.hanzi.sentence, comments[i])
             if len(rst) == 0 or rst == ['。'] or rst == ['？'] or rst == ['！'] or rst == ['.'] or rst == [','] or rst == ['?'] or rst == ['!']:
-                default_logger.warning("拆分失败或结果不符(去除空格和标点符号)：%s" % (rst))
+                #default_logger.warning("拆分失败或结果不符(去除空格和标点符号)：%s" % (rst))
+                continue
             else:
                 remarks.append(rst)
         result = self.solvedata(remarks=remarks)
@@ -163,7 +167,7 @@ class JDSpider:
         for i in range(len(remarks)):
             for j in range(len(remarks[i])):
                 sentences.append(remarks[i][j])
-        default_logger.info("爬取的评价结果：" + str(sentences))
+        #default_logger.info("搜集的评价结果：" + str(sentences))
         return sentences
 
         # 存入mysql数据库
@@ -196,7 +200,7 @@ class JDSpider:
 
 # 测试用例
 if __name__ == "__main__":
-    jdlist = ['商品名']
+    jdlist = ['笔筒台灯插座 手机支架多功能USB充电LED护眼灯遥控定时学生学习阅 读灯宿舍寝室卧室床头书桌台灯插排 笔筒台灯 4插位+2USB 1.8米（不带遥控）']
     for item in jdlist:
         spider = JDSpider(item)
-        spider.getData(2, 3)
+        spider.getData(4, 3)
