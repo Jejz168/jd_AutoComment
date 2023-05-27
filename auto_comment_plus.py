@@ -145,28 +145,6 @@ def generation(pname, _class=0, _type=1, opts=None):
 
         return 5, comments.replace("$", name)
 
-# ChatGPT评价生成
-def generation_ai(pname, _class=0, _type=1, opts=None):
-    # 当存在 OPENAI_API_BASE_URL 时，使用反向代理
-    api_base_url = os.environ.get("OPENAI_API_BASE_URL", "https://api.openai.com")
-    api_key = os.environ["OPENAI_API_KEY"]
-    prompt = f"{pname} 写一段此商品的评价，简短、口语化"
-    response = requests.post(
-        f"{api_base_url}/v1/chat/completions",
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        },
-        json={
-            "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 1024,
-        }
-    )
-    response_text = response.json()
-    return 5, response_text["choices"][0]["message"]["content"].strip()
-
-
 # 查询全部评价
 def all_evaluate(opts=None):
     try:
@@ -251,9 +229,6 @@ def sunbw(N, opts=None):
         opts['logger'].info(f"当前共有{N['待评价订单']}个评价。")
         opts['logger'].debug('Commenting on items')
         for i, Order in enumerate(reversed(Order_data)):
-            if i + 1 > 10:
-                opts['logger'].info(f'\n已评价10个订单，跳出')
-                break
             try:
                 oid = Order.xpath('tr[@class="tr-th"]/td/span[3]/a/text()')[0]
                 opts['logger'].debug('oid: %s', oid)
