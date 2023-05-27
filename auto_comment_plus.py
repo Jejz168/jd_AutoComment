@@ -379,9 +379,6 @@ def review(N, opts=None):
         opts['logger'].info(f"当前共有{N['待追评']}个需要追评。")
         opts['logger'].debug('Commenting on items')
         for i, Order in enumerate(reversed(Order_data)):
-            if i + 1 > 10:
-                opts['logger'].info(f'\n已评价10个订单，跳出')
-                break
             oname = Order.xpath('td[1]/div/div[2]/div/a/text()')[0]
             _id = Order.xpath('td[3]/div/a/@href')[0]
             opts['logger'].debug('_id: %s', _id)
@@ -466,9 +463,6 @@ def Service_rating(N, opts=None):
         opts['logger'].info(f"当前共有{N['服务评价']}个需要服务评价。")
         opts['logger'].debug('Commenting on items')
         for i, Order in enumerate(reversed(Order_data)):
-            if i + 1 > 10:
-                opts['logger'].info(f'\n已评价10个订单，跳出')
-                break
             #oname = Order.xpath('td[1]/div[1]/div[2]/div/a/text()')[0]
             oid = Order.xpath('td[1]/span[3]/a/text()')[0]
             opts['logger'].info(f'\n开始第{i+1}个订单: {oid}')
