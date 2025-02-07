@@ -22,12 +22,9 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
-        git clone --depth=1 --filter=blob:none --no-checkout https://github.com/Dimlitter/jd_AutoComment.git temp_repo
-        cd temp_repo
-        git checkout main -- trunk/
-        mv trunk/* ../  # 移动 trunk/ 内容到当前目录
-        cd ..
-        rm -rf temp_repo
+        git clone https://github.com/Dimlitter/jd_AutoComment.git temp_repo
+        mv temp_repo/* temp_repo/.* ./ 2>/dev/null
+        rm -rf temp_repo .git
         
     - name: Commit
       run: |
