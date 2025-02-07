@@ -23,10 +23,8 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         pwd
         git clone https://github.com/Dimlitter/jd_AutoComment.git temp_repo
-        shopt -s dotglob  # 启用 dotglob 以匹配所有隐藏文件（避免 `.*` 移动错误）
-        mv temp_repo/* ./  # 移动所有普通文件
-        rm -rf temp_repo  # 删除临时文件夹
-        rm -rf .git
+        rsync -av temp_repo/ ./ --exclude=.git
+        rm -rf temp_repo
         
     - name: Commit
       run: |
