@@ -1,14 +1,13 @@
 # jd_AutoComment
 
 ## 鸣谢
+
 感谢[qiu-lzsnmb](https://github.com/qiu-lzsnmb)大佬的脚本和[Zhang Jiale](https://github.com/2274900)大佬的评论爬虫
 
 源库链接：[自动评价](https://github.com/qiu-lzsnmb/jd_lzsnmb)
 [评论爬虫](https://github.com/2274900/JD_comment_spider)
 
-### 本脚本只是对以上两位的结合以及魔改，用于解决评论文不对题的问题。经测试，本脚本能初步解决这一问题。
-
-
+### 本脚本只是对以上两位的结合以及魔改，用于解决评论文不对题的问题。经测试，本脚本能初步解决这一问题
 
 ## 思路
 
@@ -16,13 +15,22 @@
 
 ## 用法
 
-> 请先确保python版本为最新版
+> 请先确保python版本为3.8+，最好是python3.10+。
 
 ### 分支说明
 
 main分支为开发版，更新较快，但由于开发者cookie数量远远不足以满足开发需求，测试不够完备，可能存在bug。
 
 stable分支为稳定版，更新较慢，基本可以稳定使用，但功能可能存在欠缺。
+
+more_cookie分支是有需要多账号进行批量评论诞生的分支。
+> 由于作者只有一个 jd 账号，因此该more_cookie分支，需要有多账号的朋友进行测试。
+目前代码逻辑是 先普通评价-》再追评-》再第二个账号继续执行前面的顺序。所以你多账号可能要历史追评结束后才会执行，cookie 可能会失效，如果很多个 jd 账号话。可能实际上效果没那么好。
+
+### 安装依赖库
+
+```bash
+pip install -r requirements.
 
 请用户自行判断使用哪个分支。
 
@@ -36,7 +44,7 @@ cd jd_AutoComment
 pip install -r requirements.txt
 ```
 
-获取电脑版ck后填入配置文件。可以选择填入默认配置文件 `config.yml` ；也可以填入用户配置文件 `config.user.yml` （需要新建后将 `config.yml` 中的内容复制到该文件中），避免后续的更新覆盖 `config.yml` 中的内容。
+`https://club.jd.com/myJdcomments/myJdcomment.action`打开该链接，登录账号后获取 xhr 请求下的 `cookie`，`全部`填入配置文件。可以选择填入默认配置文件 `config.yml` ；也可以填入用户配置文件 `config.user.yml` （需要新建后将 `config.yml` 中的内容复制到该文件中），避免后续的更新覆盖 `config.yml` 中的内容。
 
 需要填入如下内容：
 

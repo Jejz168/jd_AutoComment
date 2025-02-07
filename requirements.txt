@@ -3,4 +3,3 @@ requests
 lxml
 zhon
 pyyaml
-urllib3==1.25.11
