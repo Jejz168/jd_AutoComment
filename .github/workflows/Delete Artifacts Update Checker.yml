@@ -31,8 +31,15 @@ jobs:
         git config --global user.email 349589369@qq.com
         git config --global user.name Jejz-jd_AutoComment
         git add .
-        git commit -m"action:`date`"
-        git pull --rebase
+        if ! git diff --cached --quiet; then
+            git commit -m "action: $(date)"
+      
+            git pull --rebase || (git rebase --abort && echo "Rebase failed, skipping.")
+      
+            git push origin main  # 确保使用正确的分支（可能是 master）
+        else
+            echo "No changes to commit."
+        fi
         
     - name: Push changes
       uses: ad-m/github-push-action@master
