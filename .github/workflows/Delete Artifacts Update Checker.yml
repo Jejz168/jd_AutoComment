@@ -22,13 +22,12 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
-        git init jd_AutoComment
-        cd jd_AutoComment
-        git remote add origin https://github.com/Dimlitter/jd_AutoComment.git
-        git config core.sparseCheckout true
-        echo "trunk/" >> .git/info/sparse-checkout
-        git pull origin main  # 或者 master，看仓库默认分支
+        git clone --depth=1 --filter=blob:none --no-checkout https://github.com/Dimlitter/jd_AutoComment.git temp_repo
+        cd temp_repo
+        git checkout main -- trunk/
+        mv trunk/* ../  # 移动 trunk/ 内容到当前目录
         cd ..
+        rm -rf temp_repo
         
     - name: Commit
       run: |
