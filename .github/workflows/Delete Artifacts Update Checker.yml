@@ -22,9 +22,7 @@ jobs:
       run: |
         sudo timedatectl set-timezone "$TZ"
         pwd
-        git clone https://github.com/Dimlitter/jd_AutoComment.git temp_repo
-        mv temp_repo/* temp_repo/.* ./ 2>/dev/null
-        rm -rf temp_repo .git
+        git archive --format=tar --remote=https://github.com/Dimlitter/jd_AutoComment.git HEAD | tar -x
         
     - name: Commit
       run: |
